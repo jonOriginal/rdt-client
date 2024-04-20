@@ -27,11 +27,11 @@ public class InternalDownloader : IDownloader
         _uri = uri;
         _filePath = filePath;
         
-        _downloadConfiguration = new();
+        _downloadConfiguration = new DownloaderNET.Settings();
 
         SetSettings();
 
-        _downloadService = new(_uri, _filePath, _downloadConfiguration);
+        _downloadService = new DownloaderNET.Downloader(_uri, _filePath, _downloadConfiguration);
 
         _downloadService.OnLog += (message, level) =>
         {
@@ -65,7 +65,7 @@ public class InternalDownloader : IDownloader
             }
 
             DownloadProgress.Invoke(this,
-                                     new()
+                                     new DownloadProgressEventArgs
                                      {
                                          Speed = (Int64)chunks.Where(m => m.IsActive).Sum(m => m.Speed),
                                          BytesDone = chunks.Sum(m => m.DownloadBytes),
@@ -76,7 +76,7 @@ public class InternalDownloader : IDownloader
         _downloadService.OnComplete += (_, error) =>
         {
             DownloadComplete?.Invoke(this,
-                                     new()
+                                     new DownloadCompleteEventArgs
                                      {
                                          Error = error?.Message
                                      });

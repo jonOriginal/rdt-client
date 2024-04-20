@@ -57,7 +57,7 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
 
         if (settings.Count == 0)
         {
-            throw new("No settings found, please restart");
+            throw new Exception("No settings found, please restart");
         }
 
         SetSettings(settings, Get, null);

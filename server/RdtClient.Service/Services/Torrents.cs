@@ -40,7 +40,7 @@ public class Torrents(
                 Provider.Premiumize => premiumizeTorrentClient,
                 Provider.RealDebrid => realDebridTorrentClient,
                 Provider.AllDebrid => allDebridTorrentClient,
-                _ => throw new("Invalid Provider")
+                _ => throw new Exception("Invalid Provider")
             };
         }
     }
@@ -110,7 +110,7 @@ public class Torrents(
         catch (Exception ex)
         {
             logger.LogError(ex, "{ex.Message}, trying to parse {magnetLink}", ex.Message, magnetLink);
-            throw new($"{ex.Message}, trying to parse {magnetLink}");
+            throw new Exception($"{ex.Message}, trying to parse {magnetLink}");
         }
 
         var id = await TorrentClient.AddMagnet(magnetLink);
@@ -161,7 +161,7 @@ public class Torrents(
         }
         catch (Exception ex)
         {
-            throw new($"{ex.Message}, trying to parse {fileAsBase64}");
+            throw new Exception($"{ex.Message}, trying to parse {fileAsBase64}");
         }
 
         var id = await TorrentClient.AddFile(bytes);
@@ -357,7 +357,7 @@ public class Torrents(
 
     public async Task<String> UnrestrictLink(Guid downloadId)
     {
-        var download = await downloads.GetById(downloadId) ?? throw new($"Download with ID {downloadId} not found");
+        var download = await downloads.GetById(downloadId) ?? throw new Exception($"Download with ID {downloadId} not found");
 
         Log($"Unrestricting link", download, download.Torrent);
 
@@ -494,7 +494,7 @@ public class Torrents(
 
             if (String.IsNullOrWhiteSpace(torrent.FileOrMagnet))
             {
-                throw new($"Cannot re-add this torrent, original magnet or file not found");
+                throw new Exception($"Cannot re-add this torrent, original magnet or file not found");
             }
 
             Torrent newTorrent;
@@ -681,7 +681,7 @@ public class Torrents(
             return;
         }
 
-        var torrent = await torrentData.GetById(torrentId) ?? throw new($"Cannot find Torrent with ID {torrentId}");
+        var torrent = await torrentData.GetById(torrentId) ?? throw new Exception($"Cannot find Torrent with ID {torrentId}");
 
         var downloadsForTorrent = await downloads.GetForTorrent(torrentId);
 

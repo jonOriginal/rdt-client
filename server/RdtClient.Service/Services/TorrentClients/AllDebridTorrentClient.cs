@@ -19,7 +19,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IHtt
 
             if (String.IsNullOrWhiteSpace(apiKey))
             {
-                throw new("All-Debrid API Key not set in the settings");
+                throw new Exception("All-Debrid API Key not set in the settings");
             }
 
             var httpClient = httpClientFactory.CreateClient();
@@ -45,7 +45,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IHtt
 
     private static TorrentClientTorrent Map(Magnet torrent)
     {
-        return new()
+        return new TorrentClientTorrent
         {
             Id = torrent.Id.ToString(),
             Filename = torrent.Filename,
@@ -81,9 +81,9 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IHtt
 
     public async Task<TorrentClientUser> GetUser()
     {
-        var user = await GetClient().User.GetAsync() ?? throw new("Unable to get user");
+        var user = await GetClient().User.GetAsync() ?? throw new Exception("Unable to get user");
 
-        return new()
+        return new TorrentClientUser
         {
             Username = user.Username,
             Expiration = user.PremiumUntil > 0 ? new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(user.PremiumUntil) : null
@@ -96,10 +96,10 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IHtt
 
         if (result?.Id == null)
         {
-            throw new("Unable to add magnet link");
+            throw new Exception("Unable to add magnet link");
         }
 
-        var resultId = result.Id.ToString() ?? throw new($"Invalid responseID {result.Id}");
+        var resultId = result.Id.ToString() ?? throw new Exception($"Invalid responseID {result.Id}");
 
         return resultId;
     }
@@ -110,10 +110,10 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IHtt
 
         if (result?.Id == null)
         {
-            throw new("Unable to add torrent file");
+            throw new Exception("Unable to add torrent file");
         }
 
-        var resultId = result.Id.ToString() ?? throw new($"Invalid responseID {result.Id}");
+        var resultId = result.Id.ToString() ?? throw new Exception($"Invalid responseID {result.Id}");
 
         return resultId;
     }
@@ -126,7 +126,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IHtt
         {
             return
             [
-                new()
+                new TorrentClientAvailableFile
                 {
                     Filename = "All files",
                     Filesize = 0
@@ -153,7 +153,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IHtt
 
         if (result.Link == null)
         {
-            throw new("Invalid result link");
+            throw new Exception("Invalid result link");
         }
 
         return result.Link;
@@ -279,7 +279,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IHtt
 
     private async Task<TorrentClientTorrent> GetInfo(String torrentId)
     {
-        var result = await GetClient().Magnet.StatusAsync(torrentId) ?? throw new($"Unable to find magnet with ID {torrentId}");
+        var result = await GetClient().Magnet.StatusAsync(torrentId) ?? throw new Exception($"Unable to find magnet with ID {torrentId}");
 
         return Map(result);
     }

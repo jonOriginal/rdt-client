@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Net.Http.Headers;
+using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -35,7 +36,7 @@ public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
             try
             {
                 var httpClient = new HttpClient();
-                httpClient.DefaultRequestHeaders.UserAgent.Add(new("RdtClient", CurrentVersion));
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("RdtClient", CurrentVersion));
                 var response = await httpClient.GetStringAsync($"https://api.github.com/repos/rogerfar/rdt-client/tags?per_page=1", stoppingToken);
 
                 var gitHubReleases = JsonConvert.DeserializeObject<List<GitHubReleasesResponse>>(response);

@@ -28,7 +28,7 @@ public class DownloadClient(Download download, Torrent torrent, String destinati
         {
             if (download.Link == null)
             {
-                throw new($"Invalid download link");
+                throw new Exception($"Invalid download link");
             }
 
             var filePath = DownloadHelper.GetDownloadPath(destinationPath, torrent, download);
@@ -36,7 +36,7 @@ public class DownloadClient(Download download, Torrent torrent, String destinati
 
             if (filePath == null || downloadPath == null)
             {
-                throw new("Invalid download path");
+                throw new Exception("Invalid download path");
             }
 
             await FileHelper.Delete(filePath);
@@ -49,7 +49,7 @@ public class DownloadClient(Download download, Torrent torrent, String destinati
                 Data.Enums.DownloadClient.Bezzad => new BezzadDownloader(download.Link, filePath),
                 Data.Enums.DownloadClient.Aria2c => new Aria2cDownloader(download.RemoteId, download.Link, filePath, downloadPath),
                 Data.Enums.DownloadClient.Symlink => new SymlinkDownloader(download.Link, filePath, downloadPath),
-                _ => throw new($"Unknown download client {Type}")
+                _ => throw new Exception($"Unknown download client {Type}")
             };
 
             Downloader.DownloadComplete += (_, args) =>
@@ -80,7 +80,7 @@ public class DownloadClient(Download download, Torrent torrent, String destinati
 
             Finished = true;
 
-            throw new($"An unexpected error occurred preparing download {download.Link} for torrent {torrent.RdName}: {ex.Message}");
+            throw new Exception($"An unexpected error occurred preparing download {download.Link} for torrent {torrent.RdName}: {ex.Message}");
         }
     }
 

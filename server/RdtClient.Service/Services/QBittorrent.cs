@@ -127,7 +127,7 @@ public class QBittorrent(ILogger<QBittorrent> logger, Settings settings, Authent
             SavePath = "",
             SavePathChangedTmmEnabled = false,
             SaveResumeDataInterval = 60,
-            ScanDirs = new(),
+            ScanDirs = new ScanDirs(),
             ScheduleFromHour = 8,
             ScheduleFromMin = 0,
             ScheduleToHour = 20,
@@ -619,7 +619,7 @@ public class QBittorrent(ILogger<QBittorrent> logger, Settings settings, Authent
 
         var activeDownloads = TorrentRunner.ActiveDownloadClients.Sum(m => m.Value.Speed);
 
-        return new()
+        return new SyncMetaData
         {
             Categories = categories,
             FullUpdate = true,
@@ -627,7 +627,7 @@ public class QBittorrent(ILogger<QBittorrent> logger, Settings settings, Authent
             Tags = null,
             Trackers = new Dictionary<String, List<String>>(),
             Torrents = torrents.ToDictionary(m => m.Hash, m => m),
-            ServerState = new()
+            ServerState = new SyncMetaDataServerState
             {
                 DlInfoSpeed = activeDownloads,
                 UpInfoSpeed = 0

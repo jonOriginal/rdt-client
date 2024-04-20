@@ -99,7 +99,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
             if (!Directory.Exists(rcloneMountPath))
             {
-                throw new($"Rclone mount path ({rcloneMountPath}) was not found!");
+                throw new Exception($"Rclone mount path ({rcloneMountPath}) was not found!");
             }
         }
 
@@ -400,7 +400,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
                             if (String.IsNullOrWhiteSpace(remoteId))
                             {
-                                throw new($"No remote ID received from download client");
+                                throw new Exception($"No remote ID received from download client");
                             }
 
                             Log($"Received ID {remoteId}", download, torrent);

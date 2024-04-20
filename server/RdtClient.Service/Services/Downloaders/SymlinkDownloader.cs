@@ -13,6 +13,81 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
     private readonly ILogger _logger = Log.ForContext<SymlinkDownloader>();
 
     private const Int32 MaxRetries = 10;
+    
+    private readonly List<String> _archiveExtensions =
+    [
+        ".zip",
+        ".rar",
+        ".tar"
+    ];
+
+    private async Task<String?> SearchForFile(ICollection<String> potentialFilePaths, String fileName)
+    {   
+        FileInfo? info = null;
+        for (var retryCount = 0; retryCount < MaxRetries; retryCount++)
+        {
+            DownloadProgress?.Invoke(this,
+                                     new DownloadProgressEventArgs
+                                     {
+                                         BytesDone = retryCount,
+                                         BytesTotal = 10,
+                                         Speed = 1
+                                     });
+
+            _logger.Debug($"Searching for {fileName} (attempt #{retryCount})...");
+
+            foreach (var potentialFilePath in potentialFilePaths)
+            {
+                var potentialFilePathWithFileName = Path.Combine(potentialFilePath, fileName);
+
+                _logger.Debug($"Searching {potentialFilePathWithFileName}...");
+
+                if (File.Exists(potentialFilePathWithFileName))
+                {
+                    info = new FileInfo(potentialFilePathWithFileName);
+                    break;
+                }
+            }
+
+            if (info == null)
+            {
+                await Task.Delay(1000 * retryCount);
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        return info?.FullName;
+    }
+    private async Task<String?> SearchForUnarchived(String SearchPath)
+    {
+        for (var retryCount = 0; retryCount < MaxRetries; retryCount++)
+        {
+            DownloadProgress?.Invoke(this,
+                                     new DownloadProgressEventArgs
+                                     {
+                                         BytesDone = retryCount,
+                                         BytesTotal = 10,
+                                         Speed = 1
+                                     });
+
+            _logger.Debug($"Searching for unarchived (attempt #{retryCount})...");
+
+            if (Directory.Exists(SearchPath))
+            {
+                var info = new DirectoryInfo(SearchPath);
+                return info.FullName;
+            }
+            else
+            {
+                await Task.Delay(1000 * retryCount);
+            }
+        }
+        
+        return null;
+    }
 
     public async Task<String> Download()
     {
@@ -21,11 +96,12 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
         try
         {
             var filePath = new FileInfo(path);
-
             var rcloneMountPath = Settings.Get.DownloadClient.RcloneMountPath.TrimEnd(['\\', '/']);
             var fileName = filePath.Name;
+            
             var fileExtension = filePath.Extension;
             var fileNameWithoutExtension = fileName.Replace(fileExtension, "");
+            
             var pathWithoutFileName = path.Replace(fileName, "").TrimEnd(['\\', '/']);
             var searchPath = Path.Combine(rcloneMountPath, pathWithoutFileName);
 
@@ -34,97 +110,43 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             _logger.Debug($"Filename without extension: {fileNameWithoutExtension}");
             _logger.Debug($"Search path: {searchPath}");
             _logger.Debug($"Rclone mount path: {rcloneMountPath}");
-            
-            Task.Delay(1000).Wait();
-
-            List<String> unWantedExtensions =
-            [
-                ".zip",
-                ".rar",
-                ".tar"
-            ];
-
-            //if (unWantedExtensions.Any(m => fileExtension == m))
-            //{
-            //    throw new($"Cant handle compressed files with symlink downloader");
-            //}
 
             DownloadProgress?.Invoke(this,
-                                     new()
+                                     new DownloadProgressEventArgs
                                      {
                                          BytesDone = 0,
                                          BytesTotal = 0,
                                          Speed = 0
                                      });
-
-            var potentialFilePaths = new List<String>();
-
-            var directoryInfo = new DirectoryInfo(searchPath);
-            while (directoryInfo.Parent != null)
-            {
-                potentialFilePaths.Add(directoryInfo.FullName);
-                directoryInfo = directoryInfo.Parent;
-
-                if (directoryInfo.FullName.TrimEnd(['\\', '/']) == rcloneMountPath)
-                {
-                    break;
-                }
-            }
-
-            potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileName));
-            potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileNameWithoutExtension));
             
-            _logger.Debug($"Potential file paths: {String.Join(", ", potentialFilePaths)}");
-
-            FileInfo? file = null;
-
-            for (var retryCount = 0; retryCount < MaxRetries; retryCount++)
+            String? file = null;
+            
+            if (_archiveExtensions.Any(m => fileExtension == m))
             {
-                DownloadProgress?.Invoke(this,
-                                         new()
-                                         {
-                                             BytesDone = retryCount,
-                                             BytesTotal = 10,
-                                             Speed = 1
-                                         });
+                file = await SearchForUnarchived(searchPath);
+            }
+            else
+            {
+                var potentialFilePaths = new List<String>();
 
-                _logger.Debug($"Searching {rcloneMountPath} for {fileName} (attempt #{retryCount})...");
-
-                foreach (var potentialFilePath in potentialFilePaths)
+                var directoryInfo = new DirectoryInfo(searchPath);
+                while (directoryInfo.Parent != null)
                 {
-                    var potentialFilePathWithFileName = Path.Combine(potentialFilePath, fileName);
+                    potentialFilePaths.Add(directoryInfo.FullName);
+                    directoryInfo = directoryInfo.Parent;
 
-                    _logger.Debug($"Searching {potentialFilePathWithFileName}...");
-
-                    if (File.Exists(potentialFilePathWithFileName))
+                    if (directoryInfo.FullName.TrimEnd(['\\', '/']) == rcloneMountPath)
                     {
-                        file = new(potentialFilePathWithFileName);
-                        break;
-                    }
-                }
-                
-                _logger.Debug($"In list = {(unWantedExtensions.Any(m => fileExtension == m ))}");
-                if (unWantedExtensions.Any(m => fileExtension == m) && file == null)
-                {
-                    var potentialFilePathWithoutExtension = Path.Combine(rcloneMountPath, fileNameWithoutExtension);
-                
-                    _logger.Debug($"RAR Searching {potentialFilePathWithoutExtension}...");
-                    
-                    if (File.Exists(potentialFilePathWithoutExtension))
-                    {
-                        file = new(potentialFilePathWithoutExtension);
                         break;
                     }
                 }
 
-                if (file == null)
-                {
-                    await Task.Delay(1000 * retryCount);
-                }
-                else
-                {
-                    break;
-                }
+                potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileName));
+                potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileNameWithoutExtension));
+            
+                _logger.Debug($"Potential file paths: {String.Join(", ", potentialFilePaths)}");
+                
+                file = await SearchForFile(potentialFilePaths, fileName);
             }
 
             if (file == null)
@@ -133,7 +155,6 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
                 try
                 {
                     var allFolders = FileHelper.GetDirectoryContents(rcloneMountPath);
-
                     _logger.Debug(allFolders);
                 }
                 catch(Exception ex)
@@ -141,25 +162,25 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
                     _logger.Error(ex.Message);
                 }
                 
-                throw new("Could not find file from rclone mount!");
+                throw new Exception("Could not find file from rclone mount!");
             }
 
-            _logger.Debug($"Found {file.FullName} at {file.FullName}");
+            _logger.Debug($"Found {file}");
 
-            var result = TryCreateSymbolicLink(file.FullName, destinationPath);
+            var result = TryCreateSymbolicLink(file, destinationPath);
 
             if (!result)
             {
-                throw new("Could not find file from rclone mount!");
+                throw new Exception("Could not find file from rclone mount!");
             }
 
-            DownloadComplete?.Invoke(this, new());
+            DownloadComplete?.Invoke(this, new DownloadCompleteEventArgs());
 
-            return file.FullName;
+            return file;
         }
         catch (Exception ex)
         {
-            DownloadComplete?.Invoke(this, new()
+            DownloadComplete?.Invoke(this, new DownloadCompleteEventArgs
             {
                 Error = ex.Message
             });

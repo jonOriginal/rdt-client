@@ -18,7 +18,7 @@ public class PremiumizeTorrentClient(ILogger<PremiumizeTorrentClient> logger, IH
 
             if (String.IsNullOrWhiteSpace(apiKey))
             {
-                throw new("Premiumize API Key not set in the settings");
+                throw new Exception("Premiumize API Key not set in the settings");
             }
 
             var httpClient = httpClientFactory.CreateClient();
@@ -44,7 +44,7 @@ public class PremiumizeTorrentClient(ILogger<PremiumizeTorrentClient> logger, IH
 
     private static TorrentClientTorrent Map(Transfer transfer)
     {
-        return new()
+        return new TorrentClientTorrent
         {
             Id = transfer.Id,
             Filename = transfer.Name,
@@ -78,9 +78,9 @@ public class PremiumizeTorrentClient(ILogger<PremiumizeTorrentClient> logger, IH
 
     public async Task<TorrentClientUser> GetUser()
     {
-        var user = await GetClient().Account.InfoAsync() ?? throw new("Unable to get user");
+        var user = await GetClient().Account.InfoAsync() ?? throw new Exception("Unable to get user");
 
-        return new()
+        return new TorrentClientUser
         {
             Username = user.CustomerId.ToString(),
             Expiration = user.PremiumUntil > 0 ? new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(user.PremiumUntil.Value) : null
@@ -93,10 +93,10 @@ public class PremiumizeTorrentClient(ILogger<PremiumizeTorrentClient> logger, IH
 
         if (result?.Id == null)
         {
-            throw new("Unable to add magnet link");
+            throw new Exception("Unable to add magnet link");
         }
 
-        var resultId = result.Id ?? throw new($"Invalid responseID {result.Id}");
+        var resultId = result.Id ?? throw new Exception($"Invalid responseID {result.Id}");
 
         return resultId;
     }
@@ -107,10 +107,10 @@ public class PremiumizeTorrentClient(ILogger<PremiumizeTorrentClient> logger, IH
 
         if (result?.Id == null)
         {
-            throw new("Unable to add torrent file");
+            throw new Exception("Unable to add torrent file");
         }
 
-        var resultId = result.Id ?? throw new($"Invalid responseID {result.Id}");
+        var resultId = result.Id ?? throw new Exception($"Invalid responseID {result.Id}");
 
         return resultId;
     }
@@ -207,7 +207,7 @@ public class PremiumizeTorrentClient(ILogger<PremiumizeTorrentClient> logger, IH
 
         Log($"Found {transfers.Count} transfers", torrent);
 
-        var transfer = transfers.FirstOrDefault(m => m.Id == torrent.RdId) ?? throw new($"Transfer {torrent.RdId} not found!");
+        var transfer = transfers.FirstOrDefault(m => m.Id == torrent.RdId) ?? throw new Exception($"Transfer {torrent.RdId} not found!");
 
         Log($"Found transfer {transfer.Name} ({transfer.Id})", torrent);
 
@@ -245,7 +245,7 @@ public class PremiumizeTorrentClient(ILogger<PremiumizeTorrentClient> logger, IH
     private async Task<TorrentClientTorrent> GetInfo(String id)
     {
         var results = await GetClient().Transfers.ListAsync();
-        var result = results.FirstOrDefault(m => m.Id == id) ?? throw new($"Unable to find transfer with ID {id}");
+        var result = results.FirstOrDefault(m => m.Id == id) ?? throw new Exception($"Unable to find transfer with ID {id}");
 
         return Map(result);
     }
