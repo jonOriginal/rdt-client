@@ -123,7 +123,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             foreach (var potentialFilePath in potentialFilePaths)
             {
 
-                _logger.Debug($"Searching {potentialFilePath}...");
+                _logger.Debug($"Searching filem{potentialFilePath}...");
 
                 if (File.Exists(potentialFilePath))
                 {
@@ -131,6 +131,12 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
 
                     break;
                 }
+            }
+            
+            foreach (var potentialFilePath in potentialFilePaths)
+            {
+
+                _logger.Debug($"Searching directory {potentialFilePath}...");
 
                 if (Directory.Exists(potentialFilePath))
                 {
