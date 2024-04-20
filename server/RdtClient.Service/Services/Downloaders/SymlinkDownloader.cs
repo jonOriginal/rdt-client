@@ -29,6 +29,8 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             var pathWithoutFileName = path.Replace(fileName, "").TrimEnd(['\\', '/']);
             var searchPath = Path.Combine(rcloneMountPath, pathWithoutFileName);
 
+            _logger.Debug($"{fileExtension}");
+
             List<String> unWantedExtensions =
             [
                 "zip",
@@ -89,6 +91,20 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
                     if (File.Exists(potentialFilePathWithFileName))
                     {
                         file = new(potentialFilePathWithFileName);
+                        break;
+                    }
+                }
+                
+                
+                if (unWantedExtensions.Any(m => fileExtension == m) && file == null)
+                {
+                    var potentialFilePathWithoutExtension = Path.Combine(rcloneMountPath, fileNameWithoutExtension);
+                
+                    _logger.Debug($"Searching {potentialFilePathWithoutExtension}...");
+                    
+                    if (File.Exists(potentialFilePathWithoutExtension))
+                    {
+                        file = new(potentialFilePathWithoutExtension);
                         break;
                     }
                 }
