@@ -149,7 +149,6 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
                 break;
             }
         }
-
         return info?.FullName;
     }
 
@@ -190,10 +189,19 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
     {
         try
         {
-            var symlinkParent = Path.GetDirectoryName(symlinkPath) ?? throw new Exception("Could not get parent directory of symlink path");
-
-            File.CreateSymbolicLink(symlinkParent, sourcePath);
-
+            var files = Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories);
+            
+            foreach (var file in files)
+            {
+                File.CreateSymbolicLink(symlinkPath, file);
+                
+                if (!File.Exists(symlinkPath))
+                {
+                    _logger.Error($"Failed to create symbolic link from {file} to {symlinkPath}");
+                    return false;
+                }
+            }
+            
             return true;
         }
         catch (Exception ex)
@@ -203,7 +211,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             return false;
         }
     }
-
+    
     private Boolean TryCreateSymLinkFile(String sourcePath, String symlinkPath)
     {
         try
