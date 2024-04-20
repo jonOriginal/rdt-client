@@ -201,9 +201,10 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             _logger.Debug($"Found {files.Length} files in {sourcePath}");
             foreach (var file in files)
             {
+                _logger.Debug($"Creating symbolic link from {file} to {symlinkPath}");
                 File.CreateSymbolicLink(symlinkPath, file);
                 
-                if (!File.Exists(symlinkPath))
+                if (!File.Exists(Path.Combine(symlinkPath, Path.GetFileName(file))))
                 {
                     _logger.Error($"Failed to create symbolic link from {file} to {symlinkPath}");
                     return false;
