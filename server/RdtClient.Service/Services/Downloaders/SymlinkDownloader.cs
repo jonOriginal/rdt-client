@@ -29,23 +29,25 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             var pathWithoutFileName = path.Replace(fileName, "").TrimEnd(['\\', '/']);
             var searchPath = Path.Combine(rcloneMountPath, pathWithoutFileName);
 
-            _logger.Debug($"{fileExtension}");
-            _logger.Debug($"{fileName}");
-            _logger.Debug($"{fileNameWithoutExtension}");
+            _logger.Debug($"Extension: {fileExtension}");
+            _logger.Debug($"Filename: {fileName}");
+            _logger.Debug($"Filename without extension: {fileNameWithoutExtension}");
+            _logger.Debug($"Search path: {searchPath}");
+            _logger.Debug($"Rclone mount path: {rcloneMountPath}");
             
             Task.Delay(1000).Wait();
 
             List<String> unWantedExtensions =
             [
-                "zip",
-                "rar",
-                "tar"
+                ".zip",
+                ".rar",
+                ".tar"
             ];
 
-            if (unWantedExtensions.Any(m => fileExtension == m))
-            {
-                throw new($"Cant handle compressed files with symlink downloader");
-            }
+            //if (unWantedExtensions.Any(m => fileExtension == m))
+            //{
+            //    throw new($"Cant handle compressed files with symlink downloader");
+            //}
 
             DownloadProgress?.Invoke(this,
                                      new()
@@ -71,6 +73,8 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
 
             potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileName));
             potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileNameWithoutExtension));
+            
+            _logger.Debug($"Potential file paths: {String.Join(", ", potentialFilePaths)}");
 
             FileInfo? file = null;
 
