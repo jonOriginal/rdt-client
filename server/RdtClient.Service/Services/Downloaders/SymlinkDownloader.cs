@@ -30,6 +30,10 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             var searchPath = Path.Combine(rcloneMountPath, pathWithoutFileName);
 
             _logger.Debug($"{fileExtension}");
+            _logger.Debug($"{fileName}");
+            _logger.Debug($"{fileNameWithoutExtension}");
+            
+            Task.Delay(1000).Wait();
 
             List<String> unWantedExtensions =
             [
@@ -100,7 +104,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
                 {
                     var potentialFilePathWithoutExtension = Path.Combine(rcloneMountPath, fileNameWithoutExtension);
                 
-                    _logger.Debug($"Searching {potentialFilePathWithoutExtension}...");
+                    _logger.Debug($"RAR Searching {potentialFilePathWithoutExtension}...");
                     
                     if (File.Exists(potentialFilePathWithoutExtension))
                     {
