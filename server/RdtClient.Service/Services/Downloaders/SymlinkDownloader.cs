@@ -198,7 +198,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
         try
         {
             var files = Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories);
-            
+            _logger.Debug($"Found {files.Length} files in {sourcePath}");
             foreach (var file in files)
             {
                 File.CreateSymbolicLink(symlinkPath, file);
