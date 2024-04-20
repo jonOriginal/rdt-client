@@ -45,14 +45,21 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
 
             String? file = null;
 
-            var potentialFilePaths = GetAdditionalFilePaths(searchPath, rcloneMountPath);
-            potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileName));
-            potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileNameWithoutExtension));
-            potentialFilePaths.Add(rcloneMountPath);
+            var potentialPaths = GetAdditionalFilePaths(searchPath, rcloneMountPath);
+            var potentialFiles = new List<String>();
+            
+            potentialPaths.Add(Path.Combine(rcloneMountPath, fileName));
+            potentialPaths.Add(Path.Combine(rcloneMountPath, fileNameWithoutExtension));
 
-            _logger.Debug($"Potential file paths: {String.Join(", ", potentialFilePaths)}");
+            foreach (var potentialFilePath in potentialPaths)
+            {
+                potentialFiles.Add(Path.Combine(potentialFilePath, fileName));
+            }
+            potentialFiles.Add(Path.Combine(rcloneMountPath, fileName));
 
-            file = await SearchForFile(potentialFilePaths, fileName);
+            _logger.Debug($"Potential file paths: {String.Join(", ", potentialPaths)}");
+
+            file = await SearchForFile(potentialFiles);
 
             if (file == null)
             {
@@ -104,7 +111,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
         return Task.CompletedTask;
     }
 
-    private async Task<String?> SearchForFile(ICollection<String> potentialFilePaths, String fileName)
+    private async Task<String?> SearchForFile(ICollection<String> potentialFilePaths)
     {
         FileSystemInfo? info = null;
 
@@ -118,24 +125,24 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
                                          Speed = 1
                                      });
 
+            var fileName = Path.GetFileName(path);
             _logger.Debug($"Searching for {fileName} (attempt #{retryCount})...");
 
             foreach (var potentialFilePath in potentialFilePaths)
             {
-                var potentialFilePathWithFileName = Path.Combine(potentialFilePath, fileName);
 
-                _logger.Debug($"Searching {potentialFilePathWithFileName}...");
+                _logger.Debug($"Searching {potentialFilePath}...");
 
-                if (File.Exists(potentialFilePathWithFileName))
+                if (File.Exists(potentialFilePath))
                 {
-                    info = new FileInfo(potentialFilePathWithFileName);
+                    info = new FileInfo(potentialFilePath);
 
                     break;
                 }
 
-                if (Directory.Exists(potentialFilePathWithFileName))
+                if (Directory.Exists(potentialFilePath))
                 {
-                    info = new DirectoryInfo(potentialFilePathWithFileName);
+                    info = new DirectoryInfo(potentialFilePath);
 
                     break;
                 }
