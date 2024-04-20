@@ -99,7 +99,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
                     }
                 }
                 
-                
+                _logger.Debug($"In list = {(unWantedExtensions.Any(m => fileExtension == m ))}");
                 if (unWantedExtensions.Any(m => fileExtension == m) && file == null)
                 {
                     var potentialFilePathWithoutExtension = Path.Combine(rcloneMountPath, fileNameWithoutExtension);
