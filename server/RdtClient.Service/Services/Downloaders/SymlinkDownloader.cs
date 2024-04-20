@@ -212,7 +212,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
         {
             File.CreateSymbolicLink(symlinkPath, sourcePath);
 
-            if (File.Exists(symlinkPath)) // Double-check that the link was created
+            if (File.Exists(symlinkPath) || Directory.Exists(symlinkPath)) // Double-check that the link was created
             {
                 _logger.Information($"Created symbolic link from {sourcePath} to {symlinkPath}");
 
