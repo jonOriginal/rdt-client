@@ -195,18 +195,19 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
 
     private Boolean TryCreateSymLinkDirectory(String sourcePath, String symlinkPath)
     {
+        var symlinkParent = Path.GetDirectoryName(symlinkPath);
         try
         {
             var files = Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories);
             _logger.Debug($"Found {files.Length} files in {sourcePath}");
             foreach (var file in files)
             {
-                _logger.Debug($"Creating symbolic link from {file} to {symlinkPath}");
-                File.CreateSymbolicLink(symlinkPath, file);
+                _logger.Debug($"Creating symbolic link from {file} to {symlinkParent}");
+                File.CreateSymbolicLink(symlinkParent, file);
                 
-                if (!File.Exists(Path.Combine(symlinkPath, Path.GetFileName(file))))
+                if (!File.Exists(Path.Combine(symlinkParent, Path.GetFileName(file))))
                 {
-                    _logger.Error($"Failed to create symbolic link from {file} to {symlinkPath}");
+                    _logger.Error($"Failed to create symbolic link from {file} to {symlinkParent}");
                     return false;
                 }
             }
