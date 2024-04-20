@@ -203,7 +203,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             foreach (var file in files)
             {
                 _logger.Debug($"Creating symbolic link from {file} to {symlinkParent}");
-                File.CreateSymbolicLink(symlinkParent, file);
+                File.CreateSymbolicLink(Path.Combine(symlinkParent, Path.GetFileName(file)), file);
                 
                 if (!File.Exists(Path.Combine(symlinkParent, Path.GetFileName(file))))
                 {
