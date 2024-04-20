@@ -199,9 +199,9 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
         
         try
         {
-            File.CreateSymbolicLink(symlinkParent, sourcePath);
+            File.CreateSymbolicLink(symlinkPath, sourcePath);
             
-            _logger.Information($"Created symbolic link from {sourcePath} to {symlinkParent}");
+            _logger.Information($"Created symbolic link from {sourcePath} to {symlinkPath}");
             
             return true;
         }
