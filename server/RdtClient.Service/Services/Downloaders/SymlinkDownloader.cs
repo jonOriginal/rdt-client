@@ -48,6 +48,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path) 
             var potentialFilePaths = GetAdditionalFilePaths(searchPath, rcloneMountPath);
             potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileName));
             potentialFilePaths.Add(Path.Combine(rcloneMountPath, fileNameWithoutExtension));
+            potentialFilePaths.Add(rcloneMountPath);
 
             _logger.Debug($"Potential file paths: {String.Join(", ", potentialFilePaths)}");
 
